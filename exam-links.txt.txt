@@ -1,0 +1,10 @@
+exam-links.txt
+
+LINK DE TRELLO: https://trello.com/b/TXzutuID/taller-de-vuelos-programacion-movil
+
+LINK DE GIT: https://github.com/Lalacangrejo/programacion-movil-2025-a-g2.git
+
+LINK DE FIGMA: https://www.figma.com/design/V8ycjzqEZFulM5UMlD70En/Untitled?node-id=0-1&t=gXn4KubYQDnXjGgf-1
+
+
+
