@@ -1,0 +1,7 @@
+{
+  "name": "Quizvue",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
