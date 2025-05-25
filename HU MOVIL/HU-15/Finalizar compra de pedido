@@ -1,0 +1,7 @@
+module.exports = (sequelize, DataTypes) => {
+  return sequelize.define('Carrito', {
+    pizzaId: DataTypes.INTEGER,
+    bebidaId: DataTypes.INTEGER,
+    cantidad: DataTypes.INTEGER
+  });
+};
