@@ -1,0 +1,70 @@
+const db = require('../models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const User = db.User;
+
+const register = async (req, res) => {
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+}
+
+  const { name, email, password } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) return res.status(400).json({ message: 'Email ya registrado' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({ name, email, password: hashedPassword });
+
+    res.status(201).json({ message: 'Usuario creado', user: { id: user.id, name, email } });
+  } catch (error) {
+    res.status(500).json({ message: 'Error en el servidor', error });
+  }
+};
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(400).json({ message: 'Credenciales incorrectas' });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).json({ message: 'Credenciales incorrectas' });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '1h' });
+
+    res.json({ message: 'Login exitoso', token });
+  } catch (error) {
+    res.status(500).json({ message: 'Error en el servidor', error });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    await user.destroy();
+
+    res.json({ message: 'Usuario eliminado' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error en el servidor', error });
+  }
+};
+
+const listUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({ attributes: ['id', 'name', 'email'] });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error en el servidor', error });
+  }
+};
+
+module.exports = { register, login, deleteUser, listUsers };
