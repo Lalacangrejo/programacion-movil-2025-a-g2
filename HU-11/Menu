@@ -1,0 +1,56 @@
+const express = require('express');
+const cors = require('cors');
+const { sendSuggestionEmail } = require('./mailer');
+const app = express();
+const db = require('./models');
+
+app.use(cors());
+app.use(express.json());
+
+// Rutas
+app.use('/pizzas', require('./routes/pizzas'));
+app.use('/bebidas', require('./routes/bebidas'));
+app.use('/carrito', require('./routes/carrito'));
+app.use('/ofertas', require('./routes/ofertas'));
+
+app.post('/send-suggestion', async (req, res) => {
+  const { subject, message } = req.body;
+
+  try {
+    const info = await sendSuggestionEmail(subject, message);
+    res.status(200).json({ success: true, message: 'Sugerencia enviada correctamente', info });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error al enviar la sugerencia', error });
+  }
+});
+
+// Sincroniza la DB
+db.sequelize.sync({ force: true }).then(async () => {
+  // Datos iniciales de pizzas
+  await db.Pizza.bulkCreate([
+    { name: 'Tres Carnes', price: 15000 },
+    { name: 'Napolitana', price: 15000 },
+    { name: 'Hawaiana', price: 30000 },
+    { name: 'Vegetariana', price: 80000 }
+  ]);
+
+  // Datos iniciales de bebidas
+  await db.Bebida.bulkCreate([
+    { name: 'Coca-Cola', price: 2500 },
+    { name: 'Limonada cerezada', price: 3000 },
+    { name: 'Soda frutos rojos', price: 3000 }
+  ]);
+
+  // Datos iniciales de ofertas
+  await db.Oferta.bulkCreate([
+    { nombre: 'Descuento en pizza', descripcion: 'Obtén un 20% de descuento en cualquier pizza', descuento: 20, activa: true },
+    { nombre: 'Bebida gratis', descripcion: 'Compra una pizza y recibe una bebida gratis', descuento: 100, activa: true },
+    { nombre: 'Descuento en combos', descripcion: 'Descuento del 10% en combos de pizza y bebida', descuento: 10, activa: false },
+  ]);
+
+  console.log('🟢 Base de datos sincronizada y datos iniciales agregados');
+});
+
+app.listen(3000, () => {
+  console.log('🚀 Servidor en http://localhost:3000');
+});
